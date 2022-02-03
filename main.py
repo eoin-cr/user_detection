@@ -41,7 +41,7 @@ class State:
                     print(f'time.time(): {time.time()}')
                     print(f'WPM: {self.count / self.time * 60 / 5}')
                     print(f'self.time = {self.time}')
-                    if self.count / self.time * 60 / 5 < 80:
+                    if self.count / self.time * 60 / 5 < self.min_wpm:
                         print("Warning: Type speed exceeded, locking")
                         subprocess.run("i3lock")
 
