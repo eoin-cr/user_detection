@@ -6,3 +6,8 @@ Uses a keylogger to check whether
 If either of these is true it will lock the computer.
 
 At the moment only 1. has been implemented.
+
+---
+
+Known issues:
+Sometimes the count gets stuck?  Not entirely sure why, has something to do with the special keys check it seems.
