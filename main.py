@@ -25,18 +25,21 @@ class State:
         self.special_key = False  # Whether the last key pressed was a special character
         self.last_press = time.time()  # The last time a key was pressed
         self.min_wpm = 55  # The minimum wpm that must be reached
-        self.chars_before_check = 25  # The characters before the check will be implemented
+        self.chars_before_check = 50  # The characters before the check will be implemented
         self.time_to_recheck = 120  # How long after the user stops typing before it rechecks their speed
         self.time_to_stop = 1  # How long between characters does it stop counting the time
 
     def on_press(self, key):
         if self.running:
             # print(key)
+#             print(self.finished)
             # If the time between now and the last time the user entered
             # input is greater than the set time to recheck, start the script
             # again
-            if time.time() - self.time_finished > self.time_to_recheck:
+            if self.finished and time.time() - self.time_finished > self.time_to_recheck:
+                self.time = 0
                 self.finished = False
+                print("first")
 
             if not self.finished:
                 # If the count is greater than the amount of characters set
@@ -74,14 +77,17 @@ class State:
                 # wpm calculation
                 elif time.time() - self.last_press > self.time_to_stop and not self.special_key and self.time_started:
                     self.start_time += (time.time() - self.last_press)
+                    self.last_press = time.time()
+                    print("Time issue")
 
                 # If the last key pressed was a special key, ignore the next one
                 elif self.special_key:
-                    print("Special key pressed")
+                    print("Key ignored - special before")
                     self.special_key = False
 
                 # Else get the character of the key pressed
                 elif getattr(key, "char", None):
+                    print("Key accepted")
                     # If the time hasn't started, start it
                     if not self.time_started:
                         self.start_time = time.time()
@@ -99,6 +105,7 @@ class State:
 
                 # Checks if a space was pressed
                 elif key == Key.space:
+                    print("Space")
                     # print(self.word)
                     # keys_array += word
                     # Stop the timer
@@ -115,6 +122,7 @@ class State:
                 # If the last key pressed was backspace, remove the last char
                 # from the word
                 elif key == Key.backspace:
+                    print("Backspace")
                     self.word = self.word[:-1]
 
                 # Otherwise, the key pressed must be a special key, so we check
@@ -122,6 +130,7 @@ class State:
                 # set the special key value and do the same stuff as when we
                 # hit spacebar with the timer
                 elif not self.special_key:
+                    print("Special key")
                     self.special_key = True
                     self.time_started = False
                     self.time += time.time() - self.start_time
