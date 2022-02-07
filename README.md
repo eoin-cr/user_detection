@@ -10,4 +10,4 @@ At the moment only 1. has been implemented.
 ---
 
 Known issues:
-Sometimes the count gets stuck?  Not entirely sure why, has something to do with the special keys check it seems.
+The count appears to get stuck when pressing 2 special keys at the same time
