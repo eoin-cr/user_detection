@@ -11,3 +11,6 @@ At the moment only 1. has been implemented.
 
 Known issues:
 The count appears to get stuck when pressing 2 special keys at the same time
+
+Function that stops timer when the user stops typing for > 3 seconds appears
+to be broken, as the WPM is displaying as unreasonably low
