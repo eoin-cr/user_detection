@@ -2,6 +2,8 @@ import subprocess
 from pynput.keyboard import Key, Listener
 # import logging
 import time
+
+
 # from datetime import datetime
 # import os
 
@@ -32,7 +34,7 @@ class State:
     def on_press(self, key):
         if self.running:
             # print(key)
-#             print(self.finished)
+            # print(self.finished)
             # If the time between now and the last time the user entered
             # input is greater than the set time to recheck, start the script
             # again
@@ -76,7 +78,11 @@ class State:
                 # 5 seconds to think, this will not be incorporated into the
                 # wpm calculation
                 elif time.time() - self.last_press > self.time_to_stop and not self.special_key and self.time_started:
+                    print(time.time())
+                    print(self.last_press)
+                    print(self.start_time)
                     self.start_time += (time.time() - self.last_press)
+                    print(self.start_time)
                     self.last_press = time.time()
                     print("Time issue")
 
@@ -108,11 +114,16 @@ class State:
                     print("Space")
                     # print(self.word)
                     # keys_array += word
+
+                    # Before implementing this check, if you hit space, stopped, and then hit space again,
+                    # time.time() - self.start_time would be added to self.time both times you hit the
+                    # space bar, leading to the wpm to be wildly incorrect
+                    if self.time_started:
+                        # Add the time to the total time
+                        self.time += (time.time() - self.start_time)
+
                     # Stop the timer
                     self.time_started = False
-
-                    # Add the time to the total time
-                    self.time += (time.time() - self.start_time)
 
                     # Append the word to the array, will be handy when we
                     # add the keyboard check
