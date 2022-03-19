@@ -143,8 +143,11 @@ class State:
                 elif not self.special_key:
                     print("Special key")
                     self.special_key = True
-                    self.time_started = False
-                    self.time += time.time() - self.start_time
+
+                    # same issue as with hitting space
+                    if self.time_started:
+                        self.time += time.time() - self.start_time
+                        self.time_started = False
 
                 # Prints the current count (useful for debugging)
                 print(self.count)
