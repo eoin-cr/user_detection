@@ -2,10 +2,20 @@ import subprocess
 from pynput.keyboard import Key, Listener
 # import logging
 import time
-
-
 # from datetime import datetime
 # import os
+
+with open("words.txt") as f:
+    file = f.read()
+
+file = file.split('\n')
+
+
+def in_qwerty(word):
+    for f_word in file:
+        if word == f_word:
+            return True
+    return False
 
 
 class State:
@@ -26,13 +36,41 @@ class State:
         # become true to stop checking for another time
         self.special_key = False  # Whether the last key pressed was a special character
         self.last_press = time.time()  # The last time a key was pressed
-        self.min_wpm = 55  # The minimum wpm that must be reached
+        self.min_wpm = 65  # The minimum wpm that must be reached
         self.chars_before_check = 50  # The characters before the check will be implemented
         self.time_to_recheck = 120  # How long after the user stops typing before it rechecks their speed
         self.time_to_stop = 1  # How long between characters does it stop counting the time
+        self.qwerty = False
+
+    def check(self):
+        # If the time has started, stop it, and get get the total
+        # time the user was typing for
+        if self.time_started:
+            self.time += (time.time() - self.start_time)
+            # self.time += (time.time() - self.time_started) % 60
+
+        # Just prints some stats, helpful for debugging
+        print(f'start_time: {self.start_time}')
+        print(f'time.time(): {time.time()}')
+        print(f'WPM: {self.count / self.time * 60 / 5}')
+        print(f'self.time = {self.time}')
+
+        # If the calculated wpm is less than the minimum wpm, lock
+        # the system
+        if (self.count / self.time * 60 / 5) < self.min_wpm or self.qwerty:
+            print("Warning: Type speed exceeded, locking")
+            subprocess.run("i3lock")
+
+        # Resets variables
+        self.finished = True
+        self.time_finished = time.time()
+        self.count = 0
+        self.time_started = False
+        self.time = 0
 
     def on_press(self, key):
         if self.running:
+            # print(self.keys_arr)
             # print(key)
             # print(self.finished)
             # If the time between now and the last time the user entered
@@ -47,30 +85,7 @@ class State:
                 # If the count is greater than the amount of characters set
                 # to check, do the check
                 if self.count > self.chars_before_check:
-                    # If the time has started, stop it, and get get the total
-                    # time the user was typing for
-                    if self.time_started:
-                        self.time += (time.time() - self.start_time)
-                        # self.time += (time.time() - self.time_started) % 60
-
-                    # Just prints some stats, helpful for debugging
-                    print(f'start_time: {self.start_time}')
-                    print(f'time.time(): {time.time()}')
-                    print(f'WPM: {self.count / self.time * 60 / 5}')
-                    print(f'self.time = {self.time}')
-
-                    # If the calculated wpm is less than the minimum wpm, lock
-                    # the system
-                    if (self.count / self.time * 60 / 5) < self.min_wpm:
-                        print("Warning: Type speed exceeded, locking")
-                        subprocess.run("i3lock")
-
-                    # Resets variables
-                    self.finished = True
-                    self.time_finished = time.time()
-                    self.count = 0
-                    self.time_started = False
-                    self.time = 0
+                    self.check()
 
                 # Else if the time since the last press is greater than the
                 # chosen time to stop, remove the time since the last press
@@ -99,7 +114,7 @@ class State:
                         self.start_time = time.time()
                         self.time_started = True
 
-                    # Add the charcter just pressed to the word, this will be
+                    # Add the character just pressed to the word, this will be
                     # useful when we add in the keyboard check later
                     self.word += key.char
 
@@ -128,6 +143,9 @@ class State:
                     # Append the word to the array, will be handy when we
                     # add the keyboard check
                     self.keys_arr.append(self.word)
+                    if in_qwerty(self.word):
+                        self.qwerty = True
+                        self.check()
                     self.word = ""
 
                 # If the last key pressed was backspace, remove the last char
@@ -139,7 +157,7 @@ class State:
                 # Otherwise, the key pressed must be a special key, so we check
                 # if the last key pressed was also a special key.  If not, we
                 # set the special key value and do the same stuff as when we
-                # hit spacebar with the timer
+                # hit space with the timer
                 elif not self.special_key:
                     print("Special key")
                     self.special_key = True
