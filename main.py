@@ -5,6 +5,8 @@ import time
 # from datetime import datetime
 # import os
 
+# TODO: Add option for user to disable qwerty check, add option to add max WPM
+
 with open("words.txt") as f:
     file = f.read()
 
@@ -13,7 +15,9 @@ file = file.split('\n')
 
 def in_qwerty(word):
     for f_word in file:
-        if word == f_word:
+        if word is f_word and word != "":
+            print(f"word: {word}")
+            print(f"file word: {f_word}")
             return True
     return False
 
@@ -36,30 +40,41 @@ class State:
         # become true to stop checking for another time
         self.special_key = False  # Whether the last key pressed was a special character
         self.last_press = time.time()  # The last time a key was pressed
-        self.min_wpm = 65  # The minimum wpm that must be reached
+        self.min_wpm = 60  # The minimum wpm that must be reached
         self.chars_before_check = 50  # The characters before the check will be implemented
-        self.time_to_recheck = 120  # How long after the user stops typing before it rechecks their speed
+        self.time_to_recheck = 30  # How long after the user stops typing before it rechecks their speed
         self.time_to_stop = 1  # How long between characters does it stop counting the time
         self.qwerty = False
 
     def check(self):
-        # If the time has started, stop it, and get get the total
-        # time the user was typing for
-        if self.time_started:
-            self.time += (time.time() - self.start_time)
-            # self.time += (time.time() - self.time_started) % 60
-
-        # Just prints some stats, helpful for debugging
-        print(f'start_time: {self.start_time}')
-        print(f'time.time(): {time.time()}')
-        print(f'WPM: {self.count / self.time * 60 / 5}')
-        print(f'self.time = {self.time}')
-
-        # If the calculated wpm is less than the minimum wpm, lock
-        # the system
-        if (self.count / self.time * 60 / 5) < self.min_wpm or self.qwerty:
-            print("Warning: Type speed exceeded, locking")
+        if self.qwerty:
             subprocess.run("i3lock")
+            # this will only be visible after the user logs in again, just making
+            # it helpful to figure out what was going on
+            print("Warning: attempt to type in qwerty detected, locking")
+
+            # prints the word the program thinks was typed in qwerty, meaning if
+            # it's a real word, the user can remove it from the word list
+            print(f"The word typed that set this off was: {self.word}")
+
+        else:
+            # If the time has started, stop it, and get get the total
+            # time the user was typing for
+            if self.time_started:
+                self.time += (time.time() - self.start_time)
+                # self.time += (time.time() - self.time_started) % 60
+
+            # Just prints some stats, helpful for debugging
+            print(f'start_time: {self.start_time}')
+            print(f'time.time(): {time.time()}')
+            print(f'WPM: {self.count / self.time * 60 / 5}')
+            print(f'self.time = {self.time}')
+
+            # If the calculated wpm is less than the minimum wpm, lock
+            # the system
+            if (self.count / self.time * 60 / 5) < self.min_wpm:
+                subprocess.run("i3lock")
+                print("Warning: Type speed exceeded, locking")
 
         # Resets variables
         self.finished = True
@@ -76,10 +91,18 @@ class State:
             # If the time between now and the last time the user entered
             # input is greater than the set time to recheck, start the script
             # again
-            if self.finished and time.time() - self.time_finished > self.time_to_recheck:
-                self.time = 0
-                self.finished = False
-                print("first")
+            if self.finished:
+                # TODO: Currently this counts after when the check was ran, rather
+                # than when the last keypress was—fix this
+                # if time.time() - self.last_press > self.time_to_recheck:
+                if time.time() - self.time_finished > self.time_to_recheck:
+                    self.time = 0
+                    self.finished = False
+                    # print("first")
+
+                # else:
+                #     # Set the last time pressed to the current time
+                #     self.last_press = time.time()
 
             if not self.finished:
                 # If the count is greater than the amount of characters set
@@ -144,6 +167,7 @@ class State:
                     # add the keyboard check
                     self.keys_arr.append(self.word)
                     if in_qwerty(self.word):
+                        print(self.word)
                         self.qwerty = True
                         self.check()
                     self.word = ""
