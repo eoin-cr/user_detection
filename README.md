@@ -98,3 +98,44 @@ If a special key is pressed, a value is set (`self.special_key`), which simply
    keeps track of every time a special key is counted.  The reason for this is so that
    whenever you do some sort of keyboard combination for example `ctrl + c` and the
    like, the ctrl and c keys are not counted in the time or character count.
+
+
+---
+
+## Notes on using this yourself
+Regarding the obvious point—the keylogger.  Installing a keylogger on your own
+computer may seem risky—because it usually is.  This program will be able to read
+anything you type on your keyboard, including passwords, credit cards details, etc,
+HOWEVER, **none of this data is sent anywhere.  There is not a single network call**
+**in the program, nor are there even the modules required to make network calls**.
+There is no reason to trust me, feel free to look through the code yourself.  Your key
+inputs are also not stored in any file on the computer.  They are stored solely on
+memory, so they should not be able to be read by other programs on your computer.
+The only file I/O occurring is the reading of the qwerty typing attempts on colemak
+list.
+
+If your keyboard language is not colemak, the qwerty check won't be properly running,
+*however*, if you have your keyboard set to qwerty, running the program will not lock
+you out.  The program will only lock out people trying to use qwerty on a colemak layout.
+
+If you do use some sort of unusual keyboard layout, such as dvorak or the like, you can
+create your own word list which will lock out people trying to type in qwerty on your
+layout.  All you need to do is take the wiki-100k.txt file, copy it, then do a search 
+and replace on a character with what happens when you attempt to press that key in your
+layout.  Take for example the word 'hello'.  On colemak the h key in qwerty is h in colemak
+as well, the e key in colemak is actually an f, l in the qwerty position is i, o in
+qwerty position is y.  So what we do is do a search and replace of e with f, l with i,
+and o with y.  Do this for every letter in the alphabet (make sure to use a special
+character or something as a temporary store for a character or obviously you will run out
+of characters for switching).  Now when the user attempts to type hello what actually
+comes out is 'hfiiy', which will match the word we just added to our word list, thereby
+confirming the user is trying to type in qwerty on a non-qwerty layout.  After you
+create this new file of all the ways trying to type qwerty words results in, you should
+run the del_word.py script.  This will just ensure actual words don't end up on the list.
+
+When you are running the program for the first time, it is advisable to set WPM limits
+around 10-20WPM below what you usually type, setting it higher than this can lead to a
+lot of false positives, and is not a great experience.  Currently I have no need for a 
+max WPM limit, as it would be too annoying for trying to use vim and the like, however,
+I will add one in the future for people who don't use any programs like that.  Most of
+the other defaults should be fine though.

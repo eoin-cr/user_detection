@@ -15,7 +15,7 @@ file = file.split('\n')
 
 def in_qwerty(word):
     for f_word in file:
-        if word is f_word and word != "":
+        if word == f_word and word != "":
             print(f"word: {word}")
             print(f"file word: {f_word}")
             return True
